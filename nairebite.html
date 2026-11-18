@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaireBite | Budget-to-Micros Meal Optimizer</title>
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-dark: #065f46;
+            --primary-light: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --amber-bg: #fffbeb;
+            --amber-border: #fde68a;
+            --amber-text: #78350f;
+            --blue: #2563eb;
+            --indigo: #4f46e5;
+            --rose: #e11d48;
+            --amber: #f59e0b;
+            --emerald: #10b981;
+            --teal: #0d9488;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        header {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 1.5rem 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .header-inner {
+            max-width: 1024px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .brand h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+        .brand p { font-size: 0.875rem; color: #d1fae5; }
+        .badge {
+            background-color: var(--primary-dark);
+            color: #d1fae5;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+        }
+        main {
+            max-width: 1024px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 860px) {
+            main { grid-template-columns: 320px 1fr; }
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .stack { display: flex; flex-direction: column; gap: 1.25rem; }
+        h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .subtext { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            color: #334155;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            background-color: #ffffff;
+            color: var(--text-main);
+        }
+        input:focus, select:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+        .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        button:hover { background-color: var(--primary-dark); }
+        .synergy-box {
+            background-color: var(--amber-bg);
+            border: 1px solid var(--amber-border);
+            color: var(--amber-text);
+            padding: 1.125rem;
+            border-radius: 0.75rem;
+            display: none;
+        }
+        .synergy-box.active { display: block; }
+        .synergy-box h3 { font-size: 0.875rem; font-weight: 700; margin-bottom: 0.375rem; }
+        .synergy-box p { font-size: 0.8rem; }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+        }
+        .cost-box { text-align: right; }
+        .cost-label { font-size: 0.75rem; color: var(--text-muted); display: block; }
+        .cost-value { font-size: 1.375rem; font-weight: 700; color: var(--primary); }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media (min-width: 540px) {
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .metric-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .track {
+            width: 100%;
+            height: 0.625rem;
+            background-color: #f1f5f9;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .fill {
+            height: 100%;
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        th {
+            border-bottom: 1px solid var(--border);
+            padding: 0.625rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .tag {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+        .right { text-align: right; }
+        .bold { font-weight: 600; }
+        .meal-box {
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            color: var(--primary-dark);
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+        }
+        .meal-box h3 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.375rem;
+        }
+        .meal-box p { font-size: 0.875rem; }
+        footer {
+            max-width: 1024px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <h1>NaireBite</h1>
+                <p>Precision micronutrient planning on an everyday budget</p>
+            </div>
+            <span class="badge">Built by Naire-Arch</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="stack">
+            <section class="card">
+                <h2>1. Set Your Parameters</h2>
+                <p class="subtext">Configure budget and nutritional goals</p>
+
+                <div class="form-group">
+                    <label for="budgetInput">Daily Food Budget (KES)</label>
+                    <input type="number" id="budgetInput" value="350" min="50" max="5000" step="10">
+                    <div class="hint">Default: KES 350/day per adult</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="focusSelect">Primary Nutrient Focus</label>
+                    <select id="focusSelect">
+                        <option value="balanced">Balanced Micronutrients (All)</option>
+                        <option value="iron">Iron &amp; Anemia Prevention</option>
+                        <option value="vitA">Vitamin A &amp; Immunity</option>
+                        <option value="protein">High Protein &amp; Zinc</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dietSelect">Dietary Preference</label>
+                    <select id="dietSelect">
+                        <option value="all">Omnivore (Includes Fish/Eggs)</option>
+                        <option value="plant">Plant-Based Only</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="optimizeBasket()">Generate Optimal Basket</button>
+            </section>
+
+            <aside id="synergyCard" class="synergy-box">
+                <h3>Smart Nutrient Pairing Active</h3>
+                <p id="synergyText"></p>
+            </aside>
+        </div>
+
+        <div class="stack">
+            <section class="card">
+                <div class="dashboard-header">
+                    <div>
+                        <h2>Daily Nutrient Targets</h2>
+                        <p class="subtext" style="margin-bottom:0;">Percentage of Adult Recommended Daily Allowance (RDA)</p>
+                    </div>
+                    <div class="cost-box">
+                        <span class="cost-label">Total Basket Cost</span>
+                        <span id="totalCostDisplay" class="cost-value">KES 0</span>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div>
+                        <div class="metric-label"><span>Energy (Target: 2,100 kcal)</span><span id="calPct">0%</span></div>
+                        <div class="track"><div id="calBar" class="fill" style="background: var(--blue);"></div></div>
+                    </div>
+                    <div>
+                        <div class="metric-label"><span>Protein (Target: 55g)</span><span id="proPct">0%</span></div>
+                        <div class="track"><div id="proBar" class="fill" style="background: var(--indigo);"></div></div>
+                    </div>
+                    <div>
+                        <div class="metric-label"><span>Iron (Target: 18mg)</span><span id="ironPct">0%</span></div>
+                        <div class="track"><div id="ironBar" class="fill" style="background: var(--rose);"></div></div>
+                    </div>
+                    <div>
+                        <div class="metric-label"><span>Vitamin A (Target: 800mcg)</span><span id="vitAPct">0%</span></div>
+                        <div class="track"><div id="vitABar" class="fill" style="background: var(--amber);"></div></div>
+                    </div>
+                    <div>
+                        <div class="metric-label"><span>Vitamin C (Target: 75mg)</span><span id="vitCPct">0%</span></div>
+                        <div class="track"><div id="vitCBar" class="fill" style="background: var(--emerald);"></div></div>
+                    </div>
+                    <div>
+                        <div class="metric-label"><span>Zinc (Target: 11mg)</span><span id="zincPct">0%</span></div>
+                        <div class="track"><div id="zincBar" class="fill" style="background: var(--teal);"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Recommended Daily Food Basket</h2>
+                <p class="subtext">Selected to maximize micronutrient density per shilling spent</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Food Item</th>
+                                <th>Portion</th>
+                                <th>Key Nutrients</th>
+                                <th class="right">Est. Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="basketTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="meal-box">
+                <h3>How to Combine These Today</h3>
+                <p id="mealPlanSuggestion"></p>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.
+    </footer>
+
+    <script>
+        const FOOD_DB = [
+            { id: 'ugali', name: 'Fortified Maize Meal (Ugali)', portion: '250g dry', cost: 25, type: 'plant', cal: 900, pro: 20, iron: 4.5, vitA: 150, vitC: 0, zinc: 2.2, tag: 'Fortified Energy & Iron' },
+            { id: 'beans', name: 'Dry Red Kidney Beans (Maharagwe)', portion: '150g dry', cost: 35, type: 'plant', cal: 500, pro: 32, iron: 8.2, vitA: 0, vitC: 2, zinc: 3.8, tag: 'Plant Protein, Iron & Zinc' },
+            { id: 'omena', name: 'Dried Silver Cyprinid (Omena)', portion: '50g', cost: 40, type: 'animal', cal: 165, pro: 30, iron: 4.0, vitA: 80, vitC: 0, zinc: 4.5, tag: 'Bioavailable Zinc & Protein' },
+            { id: 'managu', name: 'African Nightshade (Managu) / Sukuma', portion: '150g fresh', cost: 25, type: 'plant', cal: 45, pro: 4.5, iron: 5.5, vitA: 650, vitC: 65, zinc: 0.8, tag: 'Vitamin A, Vitamin C & Iron' },
+            { id: 'eggs', name: 'Eggs (2 whole)', portion: '100g (2 eggs)', cost: 40, type: 'animal', cal: 145, pro: 12.5, iron: 1.8, vitA: 160, vitC: 0, zinc: 1.3, tag: 'Complete Protein & Vitamin A' },
+            { id: 'tomato_onion', name: 'Tomatoes & Red Onions (1 each)', portion: '150g', cost: 20, type: 'plant', cal: 35, pro: 1.2, iron: 0.5, vitA: 90, vitC: 28, zinc: 0.2, tag: 'Vitamin C (Iron Booster)' },
+            { id: 'njahi', name: 'Black Beans (Njahi)', portion: '150g dry', cost: 45, type: 'plant', cal: 510, pro: 33, iron: 9.5, vitA: 10, vitC: 0, zinc: 4.1, tag: 'High Iron & Folate' },
+            { id: 'sweet_potato', name: 'Orange-Fleshed Sweet Potato', portion: '250g', cost: 35, type: 'plant', cal: 215, pro: 4.0, iron: 1.5, vitA: 1400, vitC: 45, zinc: 0.7, tag: 'Mega Vitamin A & Energy' },
+            { id: 'groundnuts', name: 'Roasted Groundnuts (Njugu)', portion: '50g', cost: 30, type: 'plant', cal: 285, pro: 13, iron: 1.3, vitA: 0, vitC: 0, zinc: 1.6, tag: 'Healthy Fats, Energy & Zinc' },
+            { id: 'avocado', name: 'Avocado (Half)', portion: '100g', cost: 25, type: 'plant', cal: 160, pro: 2.0, iron: 0.6, vitA: 15, vitC: 10, zinc: 0.6, tag: 'Healthy Fats (Absorbs Vit A)' },
+            { id: 'liver', name: 'Beef Liver (Small portion)', portion: '80g', cost: 65, type: 'animal', cal: 140, pro: 21, iron: 5.2, vitA: 4500, vitC: 1, zinc: 4.2, tag: 'Ultra-Dense Iron, Vit A & Zinc' },
+            { id: 'millet', name: 'Finger Millet Porridge (Wimbi)', portion: '100g flour', cost: 25, type: 'plant', cal: 335, pro: 7.5, iron: 3.9, vitA: 0, vitC: 0, zinc: 2.3, tag: 'Calcium, Iron & Slow Energy' }
+        ];
+
+        const RDA = { cal: 2100, pro: 55, iron: 18, vitA: 800, vitC: 75, zinc: 11 };
+
+        function scoreFood(food, focus) {
+            let score = (
+                (food.cal / RDA.cal) * 1.2 +
+                (food.pro / RDA.pro) * 1.5 +
+                (food.iron / RDA.iron) * 2.0 +
+                (food.vitA / RDA.vitA) * 1.5 +
+                (food.vitC / RDA.vitC) * 1.5 +
+                (food.zinc / RDA.zinc) * 1.8
+            );
+            if (focus === 'iron') score += (food.iron / RDA.iron) * 4.0 + (food.vitC / RDA.vitC) * 2.0;
+            if (focus === 'vitA') score += (food.vitA / RDA.vitA) * 4.0;
+            if (focus === 'protein') score += (food.pro / RDA.pro) * 3.5 + (food.zinc / RDA.zinc) * 2.5;
+            return score / food.cost;
+        }
+
+        function optimizeBasket() {
+            const budget = parseFloat(document.getElementById('budgetInput').value) || 350;
+            const focus = document.getElementById('focusSelect').value;
+            const diet = document.getElementById('dietSelect').value;
+
+            let available = FOOD_DB.filter(f => diet === 'all' || f.type === 'plant');
+            available.sort((a, b) => scoreFood(b, focus) - scoreFood(a, focus));
+
+            let basket = [];
+            let remainingBudget = budget;
+            let totals = { cal: 0, pro: 0, iron: 0, vitA: 0, vitC: 0, zinc: 0, cost: 0 };
+
+            for (let item of available) {
+                if (item.cost <= remainingBudget) {
+                    basket.push(item);
+                    remainingBudget -= item.cost;
+                    totals.cal += item.cal;
+                    totals.pro += item.pro;
+                    totals.iron += item.iron;
+                    totals.vitA += item.vitA;
+                    totals.vitC += item.vitC;
+                    totals.zinc += item.zinc;
+                    totals.cost += item.cost;
+                }
+                if (totals.cal >= 2200 && totals.iron >= 18 && totals.vitA >= 800 && remainingBudget < 40) {
+                    break;
+                }
+            }
+
+            const hasPlantIron = basket.some(i => i.id === 'beans' || i.id === 'njahi' || i.id === 'managu');
+            const hasVitC = basket.some(i => i.vitC >= 20);
+            const synergyCard = document.getElementById('synergyCard');
+            const synergyText = document.getElementById('synergyText');
+
+            if (hasPlantIron && hasVitC) {
+                synergyCard.classList.add('active');
+                synergyText.textContent = "Your basket pairs plant-based iron (legumes/greens) with Vitamin C (tomatoes/greens). Eating these in the same meal increases iron absorption by up to 3x.";
+            } else {
+                synergyCard.classList.remove('active');
+            }
+
+            renderUI(basket, totals);
+        }
+
+        function renderUI(basket, totals) {
+            document.getElementById('totalCostDisplay').textContent = "KES " + totals.cost;
+
+            const updateBar = (idPrefix, val, target) => {
+                const displayPct = Math.round((val / target) * 100);
+                document.getElementById(idPrefix + "Pct").textContent = displayPct + "%";
+                document.getElementById(idPrefix + "Bar").style.width = Math.min(displayPct, 100) + "%";
+            };
+
+            updateBar('cal', totals.cal, RDA.cal);
+            updateBar('pro', totals.pro, RDA.pro);
+            updateBar('iron', totals.iron, RDA.iron);
+            updateBar('vitA', totals.vitA, RDA.vitA);
+            updateBar('vitC', totals.vitC, RDA.vitC);
+            updateBar('zinc', totals.zinc, RDA.zinc);
+
+            const tbody = document.getElementById('basketTableBody');
+            tbody.innerHTML = '';
+
+            if (basket.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:1rem; color:#64748b;">Budget too low to assemble a meal. Try increasing above KES 50.</td></tr>';
+                document.getElementById('mealPlanSuggestion').textContent = "Increase your daily budget to generate a meal combination.";
+                return;
+            }
+
+            basket.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td class="bold">' + item.name + '</td>' +
+                    '<td style="color:#475569;">' + item.portion + '</td>' +
+                    '<td><span class="tag">' + item.tag + '</span></td>' +
+                    '<td class="right bold">KES ' + item.cost + '</td>';
+                tbody.appendChild(tr);
+            });
+
+            const names = basket.map(i => i.name.split(' (')[0]);
+            const coreItems = names.slice(0, 2).join(' and ');
+            const sideItems = names.slice(2, 4).join(' or ') || 'remaining items';
+            const booster = names.includes('Tomatoes & Red Onions') ? 'tomatoes and onions' : 'your leafy greens';
+
+            document.getElementById('mealPlanSuggestion').textContent =
+                "Use your " + coreItems + " as your core energy and protein base. Cook them with " + booster +
+                " to unlock maximum mineral absorption, and space out " + sideItems + " for breakfast or mid-day energy.";
+        }
+
+        window.onload = optimizeBasket;
+    </script>
+</body>
+</html>
